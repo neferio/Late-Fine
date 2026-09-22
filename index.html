@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Late Arrival Fine Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6F8;
+    --surface:#FFFFFF;
+    --navy:#1E2A3A;
+    --ink:#1E2A3A;
+    --ink-soft:#64748B;
+    --rule:#DCE3EA;
+    --accent:#0066CC;
+    --accent-soft:#E6F0FB;
+    --safe:#16A34A;
+    --safe-bar:#22C55E;
+    --warn:#D97706;
+    --warn-bar:#F59E0B;
+    --bad:#DC2626;
+    --bad-bar:#EF4444;
+    --worst:#991B1B;
+    --worst-bar:#EF4444;
+    --shadow:rgba(30,42,58,.08);
+
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#141C26;
+      --surface:#1E2A3A;
+      --navy:#0F1620;
+      --ink:#E8EDF2;
+      --ink-soft:#93A3B5;
+      --rule:#31404F;
+      --accent:#4D9BE8;
+      --accent-soft:#1B2C3F;
+      --safe:#4ADE80;
+      --safe-bar:#22C55E;
+      --warn:#FBBF24;
+      --warn-bar:#F59E0B;
+      --bad:#F87171;
+      --bad-bar:#EF4444;
+      --worst:#FCA5A5;
+      --worst-bar:#EF4444;
+      --shadow:rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#141C26; --surface:#1E2A3A; --navy:#0F1620; --ink:#E8EDF2; --ink-soft:#93A3B5;
+    --rule:#31404F; --accent:#4D9BE8; --accent-soft:#1B2C3F;
+    --safe:#4ADE80; --safe-bar:#22C55E; --warn:#FBBF24; --warn-bar:#F59E0B;
+    --bad:#F87171; --bad-bar:#EF4444; --worst:#FCA5A5; --worst-bar:#EF4444;
+    --shadow:rgba(0,0,0,.4);
+  }
+  *,*::before,*::after{box-sizing:inherit}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .masthead{background:var(--navy);color:#fff;padding:0 20px}
+  .masthead .inner{max-width:1040px;margin:0 auto;padding:40px 0 34px}
+  h1{
+    font-weight:700;font-size:clamp(1.8rem,5vw,2.6rem);
+    line-height:1.1;letter-spacing:-.022em;margin:0 0 10px;color:#fff;
+  }
+  .standfirst{margin:0;max-width:58ch;color:#B6C4D4;font-size:1rem}
+  .clock{
+    display:inline-block;margin-top:18px;padding:6px 13px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+    border-radius:5px;font-size:.9rem;font-weight:600;color:#fff;
+  }
+
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px 64px}
+  .grid{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.02fr);
+    gap:24px;padding-top:28px;align-items:start;
+  }
+  @media (max-width:880px){ .grid{grid-template-columns:1fr;gap:20px} }
+
+  .panel{
+    background:var(--surface);border:1px solid var(--rule);border-radius:10px;
+    padding:24px;box-shadow:0 1px 3px var(--shadow);
+  }
+  h2{font-weight:600;font-size:1.05rem;margin:0 0 18px;letter-spacing:-.008em}
+
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:.85rem;font-weight:500;color:var(--ink-soft);margin-bottom:7px}
+  input[type=time]{
+    width:100%;padding:11px 13px;
+    font-family:inherit;font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums;
+    color:var(--ink);background:var(--bg);
+    border:1px solid var(--rule);border-radius:7px;
+  }
+  input[type=time]:focus-visible,.chip:focus-visible,.check:focus-within{
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{
+    font:inherit;font-size:.81rem;font-weight:500;padding:5px 11px;cursor:pointer;
+    background:transparent;color:var(--ink-soft);
+    border:1px solid var(--rule);border-radius:99px;
+  }
+  .chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+
+  .check{
+    display:flex;gap:11px;align-items:flex-start;
+    padding:12px 0;border-top:1px solid var(--rule);
+  }
+  .check:last-of-type{border-bottom:1px solid var(--rule)}
+  .check input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--accent);flex:none}
+  .check span{font-size:.89rem;font-weight:500}
+  .check small{display:block;color:var(--ink-soft);font-size:.79rem;font-weight:400;line-height:1.45}
+  .check.muted{opacity:.4;pointer-events:none}
+
+  .verdict{
+    margin-top:22px;background:var(--bg);
+    border:1px solid var(--rule);border-left:4px solid var(--tone,var(--rule));
+    border-radius:8px;padding:18px 20px;
+  }
+  .amount{
+    font-weight:700;font-size:clamp(2.3rem,9vw,3.1rem);line-height:1.05;
+    color:var(--tone,var(--ink));letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+    transition:color .2s ease;
+  }
+  .verdict p{margin:7px 0 0;font-size:.89rem;color:var(--ink-soft)}
+  .verdict strong{color:var(--ink);font-weight:600}
+  .struck{text-decoration:line-through;text-decoration-thickness:2px;opacity:.4}
+
+  .ladder{list-style:none;margin:0;padding:0}
+  .rung{
+    position:relative;display:grid;
+    grid-template-columns:auto 1fr auto;align-items:center;gap:12px;
+    padding:12px 0 12px 14px;border-bottom:1px solid var(--rule);
+  }
+  .rung:first-child{border-top:1px solid var(--rule)}
+  .rung:last-child{border-bottom:0}
+  .rung::before{
+    content:"";position:absolute;left:0;top:50%;transform:translateY(-50%) scaleY(0);
+    width:3px;height:70%;background:var(--accent);border-radius:2px;
+    transition:transform .2s ease;
+  }
+  .rung.on::before{transform:translateY(-50%) scaleY(1)}
+  .rung.on .slot,.rung.on .cost{color:var(--ink);font-weight:600}
+  .slot{font-size:.88rem;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .bar{height:8px;border-radius:4px;background:var(--bar);opacity:.3;min-width:8px;transition:opacity .2s ease}
+  .rung.on .bar{opacity:1}
+  .cost{
+    font-size:1rem;font-weight:500;color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;min-width:62px;text-align:right;
+  }
+  .ladder-note{margin:16px 0 0;font-size:.82rem;color:var(--ink-soft);max-width:46ch}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="inner">
+    <h1>Late arrival fine calculator</h1>
+    <p class="standfirst">Miss the grace window and the fine doubles with every slab you cross. Put in the time you reached and see what the morning costs.</p>
+    <div class="clock">Reporting time 11:05 AM</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="grid">
+
+    <div class="panel">
+      <h2>Your arrival</h2>
+
+      <div class="field">
+        <label for="t">Time you reached the office</label>
+        <input type="time" id="t" value="11:20">
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="informed">
+        <span>I informed a day in advance
+          <small>Posted on Slack before 7 PM the previous working day, with a reason and an expected time.</small>
+        </span>
+      </label>
+
+      <label class="check" id="lateWrap">
+        <input type="checkbox" id="laterThanEta">
+        <span>I arrived later than the time I declared
+          <small>The waiver only covers the time you committed to.</small>
+        </span>
+      </label>
+
+      <label class="check" id="quotaWrap">
+        <input type="checkbox" id="quotaUsed">
+        <span>This is my 3rd waiver this month
+          <small>Two informed late arrivals a month are waived. After that the fine applies anyway.</small>
+        </span>
+      </label>
+
+      <div class="verdict" id="verdict">
+        <div class="amount" id="amount">₹100</div>
+        <p id="detail"></p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>The slab ladder</h2>
+      <ul class="ladder" id="ladder"></ul>
+      <p class="ladder-note">Each slab doubles the one before it, up to ₹1,600. Anything after 2 PM sits at ₹1,600 — it doesn't climb further.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var CUTOFF = 11*60 + 5;
+  var SLABS = [
+    {from:665, to:690,  amt:100,  label:"11:05 – 11:30", w:16, tone:"var(--warn)",  bar:"var(--warn-bar)"},
+    {from:690, to:720,  amt:200,  label:"11:30 – 12:00", w:26, tone:"var(--warn)",  bar:"var(--warn-bar)"},
+    {from:720, to:780,  amt:400,  label:"12:00 – 1:00",  w:44, tone:"var(--bad)",   bar:"var(--bad-bar)"},
+    {from:780, to:840,  amt:800,  label:"1:00 – 2:00",   w:66, tone:"var(--bad)",   bar:"var(--bad-bar)"},
+    {from:840, to:1440, amt:1600, label:"After 2:00",    w:95, tone:"var(--worst)", bar:"var(--worst-bar)"}
+  ];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var timeEl=$("t"), informed=$("informed"), laterEl=$("laterThanEta"), quotaEl=$("quotaUsed");
+  var amountEl=$("amount"), detailEl=$("detail"), verdictEl=$("verdict"), ladderEl=$("ladder");
+
+  function money(n){ return "₹" + n.toLocaleString("en-IN"); }
+  function pretty(mins){
+    var h=Math.floor(mins/60), m=mins%60, ap=h>=12?"PM":"AM", hh=h%12; if(hh===0)hh=12;
+    return hh+":"+(m<10?"0":"")+m+" "+ap;
+  }
+  function toMins(v){
+    if(!v) return null;
+    var p=v.split(":"); return parseInt(p[0],10)*60 + parseInt(p[1],10);
+  }
+
+  SLABS.forEach(function(s){
+    var li=document.createElement("li");
+    li.className="rung";
+    li.style.setProperty("--bar",s.bar);
+    li.innerHTML='<span class="slot"></span><span class="bar"></span><span class="cost"></span>';
+    li.querySelector(".slot").textContent=s.label;
+    li.querySelector(".bar").style.width=s.w+"%";
+    li.querySelector(".cost").textContent=money(s.amt);
+    ladderEl.appendChild(li);
+  });
+
+  ["11:00","11:20","11:45","12:30","13:40","15:15"].forEach(function(v){
+    var b=document.createElement("button");
+    b.type="button"; b.className="chip"; b.textContent=pretty(toMins(v));
+    b.addEventListener("click", function(){ timeEl.value=v; render(); });
+    $("chips").appendChild(b);
+  });
+
+  function current(){
+    var m=toMins(timeEl.value);
+    if(m===null) return null;
+    var slab=null;
+    for(var i=0;i<SLABS.length;i++){ if(m>=SLABS[i].from && m<SLABS[i].to){ slab=SLABS[i]; break; } }
+    var onTime = m < CUTOFF;
+    var waived = !onTime && slab && informed.checked && !laterEl.checked && !quotaEl.checked;
+    return {
+      mins:m, slab:slab, onTime:onTime, waived:waived,
+      base: slab ? slab.amt : 0,
+      due: (onTime || waived || !slab) ? 0 : slab.amt
+    };
+  }
+
+  function render(){
+    var r=current();
+
+    var off = !informed.checked;
+    $("lateWrap").classList.toggle("muted", off);
+    $("quotaWrap").classList.toggle("muted", off);
+    if(off){ laterEl.checked=false; quotaEl.checked=false; }
+
+    Array.prototype.forEach.call(ladderEl.children,function(li,i){
+      li.classList.toggle("on", !!(r && r.slab && SLABS[i]===r.slab));
+    });
+
+    if(!r){ amountEl.textContent="—"; detailEl.textContent="Pick a time."; return; }
+
+    if(r.onTime){
+      verdictEl.style.setProperty("--tone","var(--safe)");
+      amountEl.textContent="No fine";
+      detailEl.innerHTML="In at <strong>"+pretty(r.mins)+"</strong>, inside the grace window. Nothing owed.";
+      return;
+    }
+
+    var late=r.mins-CUTOFF;
+    var lateStr = late>=60 ? Math.floor(late/60)+"h "+(late%60)+"m" : late+" min";
+
+    if(r.waived){
+      verdictEl.style.setProperty("--tone","var(--safe)");
+      amountEl.innerHTML='<span class="struck">'+money(r.base)+'</span> ₹0';
+      detailEl.innerHTML="In at <strong>"+pretty(r.mins)+"</strong> — "+lateStr+" past 11:05, the "+
+        r.slab.label+" slab. Waived because you gave notice the day before.";
+    } else {
+      verdictEl.style.setProperty("--tone", r.slab.tone);
+      amountEl.textContent=money(r.due);
+      var why="";
+      if(informed.checked && laterEl.checked) why=" Notice doesn't cover it — you came in after the time you declared.";
+      else if(informed.checked && quotaEl.checked) why=" Your two waivers for the month are already used.";
+      detailEl.innerHTML="In at <strong>"+pretty(r.mins)+"</strong> — "+lateStr+" past 11:05, the "+
+        r.slab.label+" slab."+why;
+    }
+  }
+
+  [timeEl,informed,laterEl,quotaEl].forEach(function(el){
+    el.addEventListener("input",render); el.addEventListener("change",render);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
